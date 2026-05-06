@@ -1,0 +1,10 @@
+uploads/*
+!uploads/.gitkeep
+debug_log.txt
+api_output.txt
+test_api.php
+test_api_new.php
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
