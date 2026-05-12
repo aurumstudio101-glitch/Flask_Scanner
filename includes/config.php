@@ -23,10 +23,21 @@ function getConfig($key, $default = '') {
 }
 
 // Database configuration
-define('DB_HOST', getConfig('DB_HOST', 'localhost'));
-define('DB_USER', getConfig('DB_USER', 'root'));
-define('DB_PASS', getConfig('DB_PASS', ''));
-define('DB_NAME', getConfig('DB_NAME', 'pawn_scanner_db'));
+$mysqlUrl = getConfig('MYSQL_URL');
+if ($mysqlUrl) {
+    $url = parse_url($mysqlUrl);
+    define('DB_HOST', $url['host']);
+    define('DB_PORT', $url['port'] ?? 3306);
+    define('DB_USER', $url['user']);
+    define('DB_PASS', $url['pass'] ?? '');
+    define('DB_NAME', substr($url['path'], 1));
+} else {
+    define('DB_HOST', getConfig('DB_HOST', 'localhost'));
+    define('DB_PORT', getConfig('DB_PORT', 3306));
+    define('DB_USER', getConfig('DB_USER', 'root'));
+    define('DB_PASS', getConfig('DB_PASS', ''));
+    define('DB_NAME', getConfig('DB_NAME', 'pawn_scanner_db'));
+}
 
 // Gemini API Keys
 define('API_KEYS', array_filter([
