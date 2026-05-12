@@ -15,22 +15,29 @@ function loadEnv($path) {
 // Load .env from root
 loadEnv(__DIR__ . '/../.env');
 
-// Database configuration
-define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
-define('DB_NAME', $_ENV['DB_NAME'] ?? 'pawn_scanner_db');
+// Helper function to get config (checks getenv first, then $_ENV, then default)
+function getConfig($key, $default = '') {
+    $val = getenv($key);
+    if ($val !== false) return $val;
+    return $_ENV[$key] ?? $default;
+}
 
-// Gemini PAID API Key
-define('API_KEYS', [
-    $_ENV['GEMINI_API_KEY_1'] ?? '',
-    $_ENV['GEMINI_API_KEY_2'] ?? ''
-]);
+// Database configuration
+define('DB_HOST', getConfig('DB_HOST', 'localhost'));
+define('DB_USER', getConfig('DB_USER', 'root'));
+define('DB_PASS', getConfig('DB_PASS', ''));
+define('DB_NAME', getConfig('DB_NAME', 'pawn_scanner_db'));
+
+// Gemini API Keys
+define('API_KEYS', array_filter([
+    getConfig('GEMINI_API_KEY_1'),
+    getConfig('GEMINI_API_KEY_2')
+]));
 
 // Cloudinary Configuration
-define('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? '');
-define('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? '');
-define('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? '');
+define('CLOUDINARY_CLOUD_NAME', getConfig('CLOUDINARY_CLOUD_NAME'));
+define('CLOUDINARY_API_KEY', getConfig('CLOUDINARY_API_KEY'));
+define('CLOUDINARY_API_SECRET', getConfig('CLOUDINARY_API_SECRET'));
 
 // Branches List
 define('BRANCHES', [
