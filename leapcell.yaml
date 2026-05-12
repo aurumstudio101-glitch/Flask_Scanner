@@ -1,0 +1,19 @@
+version: "1.0"
+services:
+  flask-scanner:
+    type: web
+    runtime: php:8.2
+    install: |
+      composer install
+    run: |
+      php -S 0.0.0.0:8080
+    env:
+      - DB_HOST
+      - DB_USER
+      - DB_PASS
+      - DB_NAME
+      - GEMINI_API_KEY_1
+      - GEMINI_API_KEY_2
+      - CLOUDINARY_CLOUD_NAME
+      - CLOUDINARY_API_KEY
+      - CLOUDINARY_API_SECRET

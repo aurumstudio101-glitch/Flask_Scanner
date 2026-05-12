@@ -12,10 +12,13 @@ try {
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 
     echo "<h1>Database Setup</h1>";
-    echo "Connected to database successfully!<br><br>";
+    echo "Trying to connect with:<br>";
+    echo "Host: " . DB_HOST . "<br>";
+    echo "Port: " . DB_PORT . "<br>";
+    echo "User: " . DB_USER . "<br>";
+    echo "Database: " . DB_NAME . "<br><br>";
 
-    // 1. Create Customers Table
-    $sql1 = "CREATE TABLE IF NOT EXISTS `customers` (
+    $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `full_name` varchar(255) NOT NULL,
       `nic_number` varchar(20) NOT NULL,
