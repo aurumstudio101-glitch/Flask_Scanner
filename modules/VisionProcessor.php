@@ -11,27 +11,34 @@ class VisionProcessor {
     }
 
     private function getNextApiKey() {
-        return API_KEYS[0];
+        static $index = 0;
+        $key = $this->api_keys[$index % count($this->api_keys)];
+        $index++;
+        return $key;
     }
 
     public function processImage($imagePath, $prompt) {
         $apiKey = $this->getNextApiKey();
         
-        $configs = [
-            ['version' => 'v1beta', 'model' => 'gemini-1.5-flash'],
-            ['version' => 'v1beta', 'model' => 'gemini-flash-latest'],
-            ['version' => 'v1beta', 'model' => 'gemini-2.0-flash'],
+        // Comprehensive list of models to find the one that works for this key
+        $models = [
+            'models/gemini-flash-latest',
+            'models/gemini-1.5-flash',
+            'models/gemini-2.0-flash',
+            'models/gemini-1.5-flash-latest',
+            'models/gemini-2.0-flash-exp'
         ];
 
         $imageData = base64_encode(file_get_contents($imagePath));
         $mimeType = mime_content_type($imagePath);
         $errors = [];
 
-        $maxAttempts = 3;
-        
-        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            foreach ($configs as $config) {
-                $apiUrl = "https://generativelanguage.googleapis.com/{$config['version']}/models/{$config['model']}:generateContent?key=" . $apiKey;
+        foreach ($models as $modelName) {
+            // Try both v1 and v1beta for each model
+            $versions = ['v1beta', 'v1'];
+            
+            foreach ($versions as $version) {
+                $apiUrl = "https://generativelanguage.googleapis.com/{$version}/{$modelName}:generateContent?key=" . $apiKey;
 
                 $payload = [
                     "contents" => [
@@ -55,7 +62,7 @@ class VisionProcessor {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
                 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
                 
                 $response = curl_exec($ch);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -71,21 +78,20 @@ class VisionProcessor {
                         $data = json_decode($text, true);
                         if (is_array($data)) {
                             if (isset($data[0])) $data = $data[0];
+                            // Save working model to log for debugging
+                            file_put_contents('working_model.txt', "$version / $modelName");
                             return $data;
                         }
                     }
-                } elseif ($httpCode === 429 || $httpCode === 503) {
-                    // Rate limit or server error - take a small breather
-                    $errors[] = "Attempt $attempt [{$config['model']}]: HTTP $httpCode - Retrying...";
-                    sleep(3);
-                    continue 2; // Retry from the next attempt with all configs
                 } else {
-                    $errors[] = "[{$config['model']}]: HTTP $httpCode";
+                    $errorData = json_decode($response, true);
+                    $apiErrorMsg = isset($errorData['error']['message']) ? $errorData['error']['message'] : '';
+                    $errors[] = "[$version / $modelName]: HTTP $httpCode" . ($apiErrorMsg ? " - $apiErrorMsg" : "");
                 }
             }
         }
 
-        throw new Exception("Processing failed after $maxAttempts attempts.\n" . implode("\n", $errors));
+        throw new Exception("All models failed. Details:\n" . implode("\n", $errors));
     }
 
     public function convertPdfToJpg($sourcePath) {

@@ -1,34 +1,44 @@
 <?php
 function get_ocr_prompt($type = 'auto') {
     $common_instructions = "
-    You are an expert OCR system for pawn bills. Extract data into this EXACT JSON structure:
+    You are an expert OCR and Data Extraction AI specializing in Sri Lankan Pawn Bills (Pawning Receipts). 
+    Your task is to carefully analyze the provided image and extract information from BOTH printed templates and handwritten entries.
+
+    GUIDELINES FOR HIGH ACCURACY:
+    1. HANDWRITING: Pay extreme attention to handwritten numbers (Amounts, IR/R numbers, Dates). Handwritten digits in Sri Lankan bills can be stylistic; verify context (e.g., if it's a date, ensure it makes sense).
+    2. NAMES: Names are often handwritten in Sinhala or English. Transliterate Sinhala names to English accurately.
+    3. BRANCH: The branch name (e.g., 'Wattala', 'Kiribathgoda', 'Gampaha') is usually printed at the very top or in the header address.
+    4. DATES: Convert all dates (e.g., '24/05/08' or '2024.05.08') to strict YYYY-MM-DD format.
+    5. NUMBERS: 
+       - 'IR No' and 'R No' are critical. They are usually printed or stamped in RED or BLUE ink at the top.
+       - 'NIC': Check for 9 digits + letter (V/X) or 12 digits.
+    6. WEIGHT: Extract 'Grams' and 'Milligrams' separately. 
+    7. AMOUNTS: Ensure all amounts are numeric. Remove any 'Rs.', '/', '=', or punctuation. Example: '95,000/=' should be '95000.00'.
+    
+    If data is missing, use null.
+
+    OUTPUT FORMAT: Return ONLY a raw JSON object. NO markdown, NO code blocks, NO text before or after.
+    JSON SCHEMA:
     {
-        \"full_name\": \"Customer Name\",
-        \"nic_number\": \"796800925V\",
-        \"address\": \"Full Address\",
-        \"phone_number\": \"07xxxxxxx\",
-        \"branch_location\": \"Kiribathgoda\",
-        \"branch_address\": \"Branch Address Line\",
-        \"ir_no\": \"16312\",
-        \"r_no\": \"16312\",
-        \"receipt_no\": \"11939\",
+        \"full_name\": \"Name\",
+        \"nic_number\": \"NIC\",
+        \"address\": \"Address\",
+        \"phone_number\": \"Phone\",
+        \"branch_location\": \"Branch Name\",
+        \"ir_no\": \"IR Number\",
+        \"r_no\": \"R Number\",
+        \"receipt_no\": \"Receipt Number\",
         \"issue_date\": \"YYYY-MM-DD\",
         \"last_date\": \"YYYY-MM-DD\",
-        \"article_description\": \"Item Description\",
-        \"weight_g\": 10.00,
-        \"weight_mg\": 370.00,
-        \"principal_amount\": 95550.00,
-        \"agreed_amount\": 95550.00,
-        \"interest_months\": 1,
-        \"interest_paid\": 0,
-        \"total_amount_collected\": 110599.12
+        \"article_description\": \"Description\",
+        \"weight_g\": 0.00,
+        \"weight_mg\": 0.00,
+        \"principal_amount\": 0.00,
+        \"agreed_amount\": 0.00,
+        \"interest_months\": 0,
+        \"interest_paid\": 0.00,
+        \"total_amount_collected\": 0.00
     }
-
-    RULES:
-    1. Dates MUST be in YYYY-MM-DD format.
-    2. Numbers MUST be numeric (no commas).
-    3. If not found, use null.
-    4. Return ONLY valid JSON.
     ";
 
     return $common_instructions;

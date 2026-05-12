@@ -11,6 +11,7 @@ include 'includes/header.php';
 </header>
 
 <div class="card fade-in">
+
     <div id="drop-area" class="drop-zone">
         <div class="drop-zone-content">
             <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
@@ -40,11 +41,18 @@ include 'includes/header.php';
 <!-- Upload Progress Modal -->
 <div id="progress-modal" class="modal" style="display: none;">
     <div class="modal-content card">
-        <h3>Processing Batch...</h3>
-        <p id="progress-text">Uploading and preparing files...</p>
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.5rem;">Processing Batch...</h3>
+        <p id="progress-text" style="color: var(--text-muted); margin-bottom: 1rem;">Uploading and preparing files...</p>
+        
         <div class="progress-bar-container">
             <div id="progress-bar" class="progress-bar"></div>
         </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 600; color: var(--primary);">
+            <span id="elapsed-time">Elapsed Time: 00:00</span>
+            <span id="eta-time">Estimated Remaining: Calculating...</span>
+        </div>
+
         <div id="process-log" class="process-log"></div>
     </div>
 </div>
@@ -83,7 +91,7 @@ include 'includes/header.php';
     .modal {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.6);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -91,14 +99,15 @@ include 'includes/header.php';
         backdrop-filter: blur(4px);
     }
     .modal-content {
-        width: 500px;
-        padding: 2rem;
+        width: 800px;
+        max-width: 95vw;
+        padding: 2.5rem;
     }
     .progress-bar-container {
-        height: 10px;
+        height: 12px;
         background: var(--border);
-        border-radius: 5px;
-        margin: 1.5rem 0;
+        border-radius: 6px;
+        margin: 1rem 0;
         overflow: hidden;
     }
     .progress-bar {
@@ -108,34 +117,34 @@ include 'includes/header.php';
         transition: width 0.3s ease;
     }
     .process-log {
-        height: 150px;
+        height: 350px;
         overflow-y: auto;
         background: #0f172a;
         color: #10b981;
-        padding: 1rem;
-        border-radius: 8px;
+        padding: 1.5rem;
+        border-radius: 10px;
         font-family: monospace;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 </style>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     let selectedFiles = [];
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
     const fileItems = document.getElementById('file-items');
     const fileListContainer = document.getElementById('file-list-container');
-    const fileCount = document.getElementById('file-count');
+    const fileCountLabel = document.getElementById('file-count');
 
-    // Drag and Drop
+    // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
+        dropArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
     });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
 
     ['dragenter', 'dragover'].forEach(eventName => {
         dropArea.addEventListener(eventName, () => dropArea.classList.add('active'), false);
@@ -145,101 +154,160 @@ include 'includes/header.php';
         dropArea.addEventListener(eventName, () => dropArea.classList.remove('active'), false);
     });
 
-    dropArea.addEventListener('drop', e => {
-        handleFiles(e.dataTransfer.files);
+    dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        handleFiles(dt.files);
     });
 
-    fileInput.addEventListener('change', () => {
-        handleFiles(fileInput.files);
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
     });
 
     function handleFiles(files) {
         const newFiles = Array.from(files);
         if (selectedFiles.length + newFiles.length > 50) {
-            alert("Maximum 50 files allowed per batch.");
+            alert("Maximum 50 files allowed.");
             return;
         }
         selectedFiles = [...selectedFiles, ...newFiles];
-        updateFileList();
+        renderFileList();
     }
 
-    function updateFileList() {
+    function renderFileList() {
         fileItems.innerHTML = '';
         selectedFiles.forEach((file, index) => {
-            const item = document.createElement('div');
-            item.className = 'file-item fade-in';
-            item.innerHTML = `
-                <i class="fas fa-file-pdf"></i>
-                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${file.name}</span>
-                <i class="fas fa-times" style="cursor:pointer; color:var(--danger);" onclick="removeFile(${index})"></i>
+            const div = document.createElement('div');
+            div.className = 'file-item fade-in';
+            div.innerHTML = `
+                <i class="fas fa-file-image"></i>
+                <span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${file.name}</span>
+                <i class="fas fa-times" style="cursor:pointer; color:var(--danger);" onclick="window.removeBatchFile(${index})"></i>
             `;
-            fileItems.appendChild(item);
+            fileItems.appendChild(div);
         });
 
-        fileCount.innerText = selectedFiles.length;
+        fileCountLabel.innerText = selectedFiles.length;
         fileListContainer.style.display = selectedFiles.length > 0 ? 'block' : 'none';
     }
 
-    function removeFile(index) {
+    window.removeBatchFile = function(index) {
         selectedFiles.splice(index, 1);
-        updateFileList();
-    }
+        renderFileList();
+    };
 
-    function clearFiles() {
+    window.clearFiles = function() {
         selectedFiles = [];
-        updateFileList();
+        renderFileList();
+    };
+
+    async function compressImage(file) {
+        if (file.type === 'application/pdf') return file;
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1800;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+                };
+            };
+        });
     }
 
-    async function startBatchUpload() {
+    window.startBatchUpload = async function() {
         if (selectedFiles.length === 0) return;
 
-        document.getElementById('progress-modal').style.display = 'flex';
+        const modal = document.getElementById('progress-modal');
         const log = document.getElementById('process-log');
         const bar = document.getElementById('progress-bar');
         const text = document.getElementById('progress-text');
+        const btn = document.getElementById('upload-btn');
 
-        log.innerHTML = 'Starting batch upload...<br>';
-        
-        let completed = 0;
+        modal.style.display = 'flex';
+        btn.disabled = true;
         const total = selectedFiles.length;
+        let completed = 0;
+        let currentIndex = 0;
+        const failedFiles = [];
 
-        for (let i = 0; i < selectedFiles.length; i++) {
-            const file = selectedFiles[i];
+        log.innerHTML = `<span style="color:#60a5fa">⚡ Starting High-Speed Batch Processing (${Math.min(6, total)} Workers)</span><br><hr style="border-color:#1e293b; margin:10px 0;">`;
+
+        const processNext = async (workerId) => {
+            if (currentIndex >= selectedFiles.length) return;
             
-            log.innerHTML += `Uploading: ${file.name}...<br>`;
-            log.scrollTop = log.scrollHeight;
-
-            const formData = new FormData();
-            formData.append('bill', file);
-            formData.append('batch_mode', '1');
-
+            const file = selectedFiles[currentIndex++];
+            log.innerHTML += `<span style="color:#94a3b8">[W${workerId}]</span> Preparing ${file.name}...<br>`;
+            
             try {
-                const response = await fetch('process_scan.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
+                const blob = await compressImage(file);
+                const fd = new FormData();
+                fd.append('bill_image', blob, file.name);
+                fd.append('batch_mode', '1');
+
+                const response = await fetch('process_scan.php', { method: 'POST', body: fd });
+                const resText = await response.text();
                 
-                if (result.success) {
+                let result;
+                try {
+                    result = JSON.parse(resText);
+                } catch (e) {
+                    log.innerHTML += `<span style="color:var(--danger)">✗ [W${workerId}] Server Error: ${resText.substring(0, 100)}...</span><br>`;
+                    failedFiles.push(file);
                     completed++;
-                    const percent = Math.round((completed / total) * 100);
-                    bar.style.width = percent + '%';
-                    text.innerText = `Processed ${completed} of ${total} files...`;
-                    log.innerHTML += `<span style="color:#10b981">✓ Success: ${file.name}</span><br>`;
+                    await processNext(workerId);
+                    return;
+                }
+
+                if (result.success) {
+                    log.innerHTML += `<span style="color:#10b981">✓ [W${workerId}] Success: ${file.name}</span><br>`;
                 } else {
-                    log.innerHTML += `<span style="color:var(--danger)">✗ Error: ${file.name} - ${result.error}</span><br>`;
+                    log.innerHTML += `<span style="color:var(--danger)">✗ [W${workerId}] AI Error: ${result.error}</span><br>`;
+                    failedFiles.push(file);
                 }
             } catch (e) {
-                log.innerHTML += `<span style="color:var(--danger)">✗ Network Error: ${file.name}</span><br>`;
+                log.innerHTML += `<span style="color:var(--danger)">✗ [W${workerId}] Network Error: ${e.message}</span><br>`;
+                failedFiles.push(file);
             }
+
+            completed++;
+            bar.style.width = Math.round((completed / total) * 100) + '%';
+            text.innerText = `Processed ${completed} of ${total} files...`;
             log.scrollTop = log.scrollHeight;
+            await processNext(workerId);
+        };
+
+        const workers = [];
+        const workerCount = Math.min(6, total); // Increased to 6 for faster processing with multiple keys
+        for (let i = 1; i <= workerCount; i++) {
+            workers.push(processNext(i));
         }
 
-        log.innerHTML += '<br><b>Batch complete! Redirecting to Records...</b>';
-        setTimeout(() => {
-            window.location.href = 'records.php';
-        }, 2000);
-    }
+        await Promise.all(workers);
+
+        if (failedFiles.length > 0) {
+            log.innerHTML += `<br><span style="color:var(--warning)"><b>⚠️ ${failedFiles.length} files failed. Please retry or check server logs.</b></span>`;
+            btn.disabled = false;
+            btn.innerText = "Retry Failed Files";
+            selectedFiles = [...failedFiles];
+        } else {
+            log.innerHTML += '<br><b style="color:#10b981">🚀 All bills processed successfully!</b>';
+            setTimeout(() => window.location.href = 'records.php', 2000);
+        }
+    };
+});
 </script>
 
 <?php include 'includes/footer.php'; ?>

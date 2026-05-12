@@ -3,6 +3,7 @@ require_once 'includes/db.php';
 include 'includes/header.php';
 
 // Get some stats
+// Get some stats
 $total_records = $pdo->query("SELECT COUNT(*) FROM pawn_records")->fetchColumn();
 $total_customers = $pdo->query("SELECT COUNT(*) FROM customers")->fetchColumn();
 $pending_verifications = $pdo->query("SELECT COUNT(*) FROM pawn_records WHERE verification_status = 'pending'")->fetchColumn();

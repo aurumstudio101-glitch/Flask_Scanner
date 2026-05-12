@@ -273,6 +273,78 @@
         body.dark-mode .badge-success { background: rgba(21, 128, 61, 0.2); }
         body.dark-mode .badge-warning { background: rgba(180, 83, 9, 0.2); }
         body.dark-mode .badge-danger { background: rgba(185, 28, 28, 0.2); }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+                box-shadow: 10px 0 20px rgba(0,0,0,0.5);
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100vw;
+                padding: 1rem;
+            }
+            .mobile-menu-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .welcome h1 { font-size: 1.4rem; }
+            .actions { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+            .btn { width: 100%; justify-content: center; }
+            
+            /* Overriding inline grid styles for mobile */
+            div[style*="grid-template-columns: repeat(3, 1fr)"],
+            div[style*="grid-template-columns: repeat(2, 1fr)"] {
+                grid-template-columns: 1fr !important;
+            }
+            div[style*="grid-column: span 3;"],
+            div[style*="grid-column: span 2;"] {
+                grid-column: span 1 !important;
+            }
+            
+            embed { height: 400px !important; }
+            
+            /* Overlay for sidebar */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 90;
+                backdrop-filter: blur(3px);
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
     </style>
     
     <script>
@@ -294,9 +366,15 @@
             if (theme === 'dark') icon.classList.replace('fa-moon', 'fa-sun');
             else icon.classList.replace('fa-sun', 'fa-moon');
         }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
     </script>
 </head>
 <body>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar">
         <div class="logo">
             <i class="fas fa-bolt"></i>
@@ -351,3 +429,6 @@
     </div>
 
     <div class="main-content">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars" style="margin-right: 8px;"></i> Menu
+        </button>

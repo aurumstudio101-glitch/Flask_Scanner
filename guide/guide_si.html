@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Scanner Pro - පරිශීලක අත්පොත</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-radius: 8px;
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        h1 { color: var(--primary); font-size: 2.5rem; margin: 0; }
+        h2 { color: var(--primary); border-left: 4px solid var(--primary); padding-left: 15px; margin-top: 40px; }
+        p { font-size: 1.1rem; }
+        .section { margin-bottom: 50px; }
+        .screenshot {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin: 20px 0;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        @media print {
+            body { padding: 0; background: white; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Flask Scanner Pro</h1>
+            <p style="font-weight: bold; color: var(--secondary);">පරිශීලක අත්පොත (User Guide)</p>
+        </header>
+
+        <div class="section">
+            <h2>1. හැඳින්වීම</h2>
+            <p>Flask Scanner Pro වෙත සාදරයෙන් පිළිගනිමු. මෙම පද්ධතිය නිර්මාණය කර ඇත්තේ රූපසිංහ ට්‍රස්ට් ඉන්වෙස්ට්මන්ට් ලිමිටඩ් සඳහා AI තාක්ෂණය (OCR) භාවිතා කර උකස් බිල්පත් ඉතා වේගයෙන් සහ නිවැරදිව ඩිජිටල්කරණය කිරීම සඳහා වේ. මෙහිදී A4 පිටුවක ඇති බිල්පත් දෙකක් හඳුනාගෙන ඒවායේ දත්ත වෙන් වෙන්ව ලබාගෙන පද්ධතියට ඇතුළත් කෙරේ.</p>
+            <img src="assets/dashboard_page_1778214844057.png" class="screenshot" alt="Dashboard">
+        </div>
+
+        <div class="section">
+            <h2>2. බිල්පත් ස්කෑන් කිරීමේ ක්‍රියාවලිය</h2>
+            <p>Batch Scan මොඩියුලය මගින් ඔබට බිල්පත් දෙකක් සහිත A4 පිටු එකවර පද්ධතියට ඇතුළත් කළ හැක. පද්ධතිය මගින් ස්වයංක්‍රීයව එම රූපය කොටස් දෙකකට වෙන් කර, බිල්පත් වර්ගය හඳුනාගෙන IR අංකය, රිසිට්පත් අංකය, පාරිභෝගික නම සහ NIC වැනි තොරතුරු ලබා ගනී.</p>
+            <img src="assets/batch_scan_page_1778214865387.png" class="screenshot" alt="Scanning">
+        </div>
+
+        <div class="section">
+            <h2>3. තහවුරු කිරීම සහ සම්බන්ධ කිරීම</h2>
+            <p>ස්කෑන් කළ පසු, දත්ත තහවුරු කිරීමේ පෝලිමට (Verification Queue) ඇතුළත් වේ. මෙහිදී පද්ධතිය විසින් IR/R අංකය භාවිතා කර බිල්පත් දෙක එකිනෙකට සම්බන්ධ කරයි. ඔබට රූප දෙකම පසෙකින් බලා දත්තවල නිවැරදිභාවය තහවුරු කිරීමට සහ අවශ්‍ය නම් නිවැරදි කිරීමට හැකියාව ඇත.</p>
+            <img src="assets/verification_process_details_1778214947202.png" class="screenshot" alt="Verification">
+        </div>
+
+        <div class="section">
+            <h2>4. වාර්තා සෙවීම සහ බැලීම</h2>
+            <p>Records පිටුව මගින් ඩිජිටල්කරණය කළ සියලුම බිල්පත් නැරඹිය හැක. ශාඛාව, IR අංකය, රිසිට්පත් අංකය හෝ නම අනුව සෙවීම් කළ හැක. සෑම වාර්තාවක් සමඟම Cloudinary හි ගබඩා කර ඇති මුල් බිල්පතේ රූපයද නැරඹිය හැකිය.</p>
+            <img src="assets/records_page_1778214875832.png" class="screenshot" alt="Records">
+        </div>
+
+        <div class="section">
+            <h2>5. පද්ධති සැකසුම්</h2>
+            <p>Settings පැනලය හරහා Gemini API keys කළමනාකරණය කිරීම, ශාඛා ලැයිස්තුව යාවත්කාලීන කිරීම සහ අනෙකුත් තාක්ෂණික සැකසුම් සිදු කළ හැක. ස්කෑන් කිරීමේ ක්‍රියාවලිය සාර්ථක වීමට නම් අවම වශයෙන් එක් සක්‍රීය API key එකක්වත් තිබිය යුතුය.</p>
+            <img src="assets/settings_page_1778214906451.png" class="screenshot" alt="Settings">
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 Rupasinghe Trust Investments Ltd - Flask Scanner Pro</p>
+        </div>
+    </div>
+</body>
+</html>

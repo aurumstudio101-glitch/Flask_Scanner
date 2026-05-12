@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         // 2. Update Pawn Record
         $stmt = $pdo->prepare("
             UPDATE pawn_records SET 
-            ir_no = ?, r_no = ?, receipt_no = ?, 
+            branch_location = ?, ir_no = ?, r_no = ?, receipt_no = ?, 
             article_description = ?, weight_g = ?, weight_mg = ?, 
             principal_amount = ?, agreed_amount = ?, total_amount_collected = ?,
             issue_date = ?, last_date = ?,
@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             WHERE id = ?
         ");
         $stmt->execute([
+            $_POST['branch_location'],
             $_POST['ir_no'],
             $_POST['r_no'],
             $_POST['receipt_no'],

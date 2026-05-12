@@ -1,10 +1,13 @@
 <?php
-require_once 'includes/db.php';
-require_once 'modules/VisionProcessor.php';
-require_once 'modules/CloudinaryProcessor.php';
-require_once 'includes/prompts.php';
-
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+require_once '../includes/db.php';
+require_once '../modules/VisionProcessor.php';
+require_once '../modules/CloudinaryProcessor.php';
+require_once '../includes/prompts.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Invalid request method']);
@@ -83,18 +86,13 @@ try {
     // Clean up local file after successful upload
     if (file_exists($localPath)) unlink($localPath);
 
-    if (isset($_POST['batch_mode'])) {
-        echo json_encode([
-            'success' => true,
-            'data' => $result,
-            'image_url' => $cloudUrl,
-            'id' => $newId
-        ]);
-    } else {
-        // Redirect to view_record for single scans
-        header("Location: view_record.php?id=" . $newId);
-    }
-    exit;
+    // Always return JSON for React
+    echo json_encode([
+        'success' => true,
+        'data' => $result,
+        'image_url' => $cloudUrl,
+        'id' => $newId
+    ]);
 
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();

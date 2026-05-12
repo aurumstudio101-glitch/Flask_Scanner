@@ -1,10 +1,8 @@
-uploads/*
-!uploads/.gitkeep
-debug_log.txt
+.env
+uploads/
 api_output.txt
-test_api.php
-test_api_new.php
-.DS_Store
-Thumbs.db
+debug_log.txt
+models_list.json
 .vscode/
 .idea/
+*.log

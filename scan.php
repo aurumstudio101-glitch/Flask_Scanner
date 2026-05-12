@@ -94,15 +94,92 @@ include 'includes/header.php';
         }
     }
 
+    async function compressImage(file) {
+        if (file.type === 'application/pdf') return file;
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.85);
+                };
+            };
+        });
+    }
+
     function resetUpload() {
         fileInput.value = '';
         dropZone.style.display = 'block';
         previewContainer.style.display = 'none';
+        processingStatus.style.display = 'none';
     }
 
-    uploadForm.addEventListener('submit', () => {
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const file = fileInput.files[0];
+        if (!file) return;
+
         previewContainer.style.display = 'none';
         processingStatus.style.display = 'block';
+        
+        const statusText = document.getElementById('statusText');
+        statusText.innerText = "Compressing and uploading image...";
+
+        // Step 1: Compress
+        const readyFile = await compressImage(file);
+        
+        // Step 2: Prepare FormData
+        const formData = new FormData();
+        formData.append('bill_image', readyFile);
+
+        // Step 3: Fetch
+        try {
+            statusText.innerText = "AI is analyzing document structure...";
+            const response = await fetch('process_scan.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const result = await response.json();
+                if (result.success && result.id) {
+                    window.location.href = 'view_record.php?id=' + result.id;
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                    resetUpload();
+                }
+            }
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+            resetUpload();
+        }
     });
 </script>
 
